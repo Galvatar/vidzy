@@ -36,6 +36,7 @@ export function Video({ src, className = '' }: VideoProps) {
   };
 
   const displayTime = () => {
+    if (videoRef.current?.duration == null) return "-:-"
     let duration = Math.round(videoRef.current?.duration ?? 0);
     let mins = Math.floor(duration/60);
     let sec = duration%60;
@@ -43,7 +44,7 @@ export function Video({ src, className = '' }: VideoProps) {
   }
 
   return (
-    <div onClick={(e) => e.stopPropagation()} className={`group relative flex flex-col w-32 h-18 overflow-hidden rounded-lg bg-black ${className}`}>
+    <div onClick={(e) => e.stopPropagation()} className={`group relative flex flex-col w-32 h-18 overflow-hidden bg-black ${className}`}>
       <video
         ref={videoRef}
         src={src}
@@ -66,7 +67,7 @@ export function Video({ src, className = '' }: VideoProps) {
             }
         </button>
       </div>
-      <span className={`absolute top-1 right-1 text-xs ${isPlaying ? 'opacity-0 transition-opacity duration-500 group-hover:duration-0 group-hover:opacity-100' : 'opacity-100'}`}>
+      <span className={`absolute top-1 left-2 text-xs ${isPlaying ? 'opacity-0 transition-opacity duration-500 group-hover:duration-0 group-hover:opacity-100' : 'opacity-100'}`}>
         {displayTime()}
       </span>
 
@@ -78,7 +79,7 @@ export function Video({ src, className = '' }: VideoProps) {
           max="100"
           value={progress}
           onChange={handleSeek}
-          className="h-1 w-full flex-1 cursor-pointer accent-blue-500 rounded-full"
+          className="h-1 w-full flex-1 cursor-pointer accent-brand-base rounded-full"
         />
       </div>
     </div>

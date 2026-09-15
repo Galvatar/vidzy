@@ -2,12 +2,11 @@ import Dropzone from "./components/dropzone";
 
 export default function App() {
   return (
-    <div className="flex h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden select-none">
+    <div className="flex h-screen w-screen bg-brand-white text-gray-900 overflow-hidden select-none">
       {/* Sidebar / Asset Library */}
-      <div className="w-81 h-full">
+      <div className="w-83 h-full">
         <Dropzone />
       </div>
-      
 
       {/* Main Workspace */}
       <main className="flex-1 flex flex-col">
