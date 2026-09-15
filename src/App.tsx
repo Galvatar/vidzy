@@ -1,11 +1,20 @@
+import { useState } from "react";
 import Dropzone from "./components/dropzone";
+import { Timeline } from "./components/timeline";
+import type { FileWithPreview } from "./lib/types";
 
 export default function App() {
+  const [files, setFiles] = useState<FileWithPreview[]>([]);
+
+  function handleSeek(time: number) {
+
+  }
+
   return (
     <div className="flex h-screen w-screen bg-brand-white text-gray-900 overflow-hidden select-none">
       {/* Sidebar / Asset Library */}
       <div className="w-83 h-full">
-        <Dropzone />
+        <Dropzone files={files} onChange={setFiles} />
       </div>
 
       {/* Main Workspace */}
@@ -16,9 +25,8 @@ export default function App() {
         </div>
 
         {/* Timeline Container */}
-        <div className="h-64 border-t border-slate-800 bg-slate-900 p-2 flex flex-col">
-          <div className="text-xs text-slate-500 font-mono">00:00:00:00</div>
-          {/* Track layers go here */}
+        <div className="h-50">
+          <Timeline files={files} currentTime={0} totalDuration={60} onSeek={handleSeek} />
         </div>
       </main>
     </div>

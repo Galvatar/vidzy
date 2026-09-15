@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+import type { FileWithPreview } from '../lib/types';
 
 interface VideoProps {
-  src: string;
+  src: FileWithPreview;
   className?: string;
 }
 
@@ -12,7 +13,6 @@ export function Video({ src, className = '' }: VideoProps) {
 
   const togglePlay = () => {
     if (!videoRef.current) return;
-    // videoRef.current.muted = true;
 
     if (isPlaying) {
       videoRef.current.pause();
@@ -36,8 +36,8 @@ export function Video({ src, className = '' }: VideoProps) {
   };
 
   const displayTime = () => {
-    if (videoRef.current?.duration == null) return "-:-"
-    let duration = Math.round(videoRef.current?.duration ?? 0);
+    if (src.duration == null) return "-:-"
+    let duration = Math.round(src.duration);
     let mins = Math.floor(duration/60);
     let sec = duration%60;
     return `${mins}:${sec}`
@@ -47,7 +47,7 @@ export function Video({ src, className = '' }: VideoProps) {
     <div onClick={(e) => e.stopPropagation()} className={`group relative flex flex-col w-32 h-18 overflow-hidden bg-black ${className}`}>
       <video
         ref={videoRef}
-        src={src}
+        src={src.preview}
         onTimeUpdate={handleTimeUpdate}
         onEnded={() => setIsPlaying(false)}
         className="block aspect-auto h-full"
@@ -56,7 +56,7 @@ export function Video({ src, className = '' }: VideoProps) {
         <button
             type="button"
             onClick={togglePlay}
-            className="pointer-events-auto aspect-square bg-transparent cursor-pointer border-none text-xs font-medium text-white hover:text-gray-300"
+            className="pointer-events-auto aspect-square bg-transparent cursor-pointer border-none text-xs font-medium text-brand-white hover:text-gray-300"
         >
             {isPlaying ? 
                 <svg className='group-hover:opacity-100 opacity-0 transition-opacity duration-500 group-hover:duration-0' xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 -960 960 960" width="36px" fill="currentColor"><path d="M560-200v-560h160v560H560Zm-320 0v-560h160v560H240Z"/>

@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { Video } from "./video";
+import type { FileWithPreview } from "../lib/types";
 
-type FileWithPreview = File & { preview: string };
+interface DropzoneProps {
+    files: FileWithPreview[],
+    onChange(files: FileWithPreview[]): void
+}
 
-export default function Dropzone() {
-    const [files, setFiles] = useState<FileWithPreview[]>([]);
-
+export default function Dropzone({ files, onChange }: DropzoneProps) {
     const filesRef = useRef(files);
     filesRef.current = files;
 
@@ -21,20 +23,47 @@ export default function Dropzone() {
         'image/*': [],
         'video/*': []
         },
-        onDrop: (acceptedFiles: File[]) => {
-        setFiles(prevFiles => [
-            ...prevFiles,
-            ...acceptedFiles.map(file =>
-            Object.assign(file, {
-                preview: URL.createObjectURL(file)
-            })
-            ) as FileWithPreview[]
-        ]);
+        onDrop: async (acceptedFiles: File[]) => {
+            const filePromises = acceptedFiles.map(async (file) => {
+                const preview = URL.createObjectURL(file);
+                const duration = await getMediaDuration(file, preview);
+
+                return Object.assign(file, {
+                    preview,
+                    duration,
+                }) as FileWithPreview;
+            });
+
+            const resolvedFiles = await Promise.all(filePromises);
+
+            onChange([...files, ...resolvedFiles]);
         }
     });
 
+    const getMediaDuration = (file: File, previewUrl: string): Promise<number> => {
+        return new Promise((resolve) => {
+            // Images default to a standard timeline length (e.g., 5 seconds)
+            if (!file.type.startsWith('video/')) {
+                resolve(0);
+                return;
+            }
+
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.src = previewUrl;
+
+            video.onloadedmetadata = () => {
+            resolve(video.duration);
+            };
+
+            video.onerror = () => {
+            resolve(5);
+            };
+        });
+        };
+
     function removeAsset(name: string) {
-        setFiles(files.filter((f) => f.name !== name))
+        onChange(files.filter((f) => f.name !== name))
     }
 
     return (
@@ -55,7 +84,12 @@ export default function Dropzone() {
                     
                     <div onClick={(e) => e.stopPropagation()} className="flex h-full p-2 flex-wrap gap-3 content-start">
                         {files.map(file => (
-                            <div className="flex flex-col items-center border-2 border-transparent hover:border-brand-dark rounded-xl">
+                            <div 
+                                draggable 
+                                onDragStart={(e) => {
+                                    e.dataTransfer.setData("application/json", JSON.stringify(file));
+                                }}
+                                className="flex flex-col items-center border-2 border-transparent hover:border-brand-dark rounded-xl">
                                 <div onClick={(e) => e.stopPropagation()} key={file.name} className="flex flex-col relative w-32 h-22 rounded-xl overflow-hidden items-center justify-center border-2">
                                     <button 
                                         onClick={() => removeAsset(file.name)}
@@ -65,7 +99,7 @@ export default function Dropzone() {
                                     </button>
                                     {file.type.startsWith('video/') ? (
                                         <Video
-                                            src={file.preview}
+                                            src={file}
                                         />
                                     ) : (
                                         <img
@@ -82,7 +116,7 @@ export default function Dropzone() {
                         ))}
                     </div>
                     {isDragActive &&
-                    <div className="flex flex-col items-center justify-center absolute top-0 left-0 rounded-lg bg-black opacity-50 text-gray-300 w-full h-full z-10">
+                    <div className="flex flex-col items-center justify-center absolute top-0 left-0 rounded-lg bg-brand-darkest opacity-50 text-brand-white w-full h-full z-10">
                         <svg xmlns="http://www.w3.org/2000/svg" height="60px" viewBox="0 -960 960 960" width="60px" fill="currentColor"><path d="M260-160q-91 0-155.5-63T40-377q0-78 47-139t123-78q25-92 100-149t170-57q117 0 198.5 81.5T760-520q69 8 114.5 59.5T920-340q0 75-52.5 127.5T740-160H520q-33 0-56.5-23.5T440-240v-206l-64 62-56-56 160-160 160 160-56 56-64-62v206h220q42 0 71-29t29-71q0-42-29-71t-71-29h-60v-80q0-83-58.5-141.5T480-720q-83 0-141.5 58.5T280-520h-20q-58 0-99 41t-41 99q0 58 41 99t99 41h100v80H260Zm220-280Z"/>
                         </svg>
                         <span>Drag here to upload</span>
