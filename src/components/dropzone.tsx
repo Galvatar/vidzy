@@ -6,9 +6,10 @@ import type { FileWithPreview } from "../lib/types";
 interface DropzoneProps {
     files: FileWithPreview[],
     onChange(files: FileWithPreview[]): void
+    onDrag(file: FileWithPreview | null): void
 }
 
-export default function Dropzone({ files, onChange }: DropzoneProps) {
+export default function Dropzone({ files, onChange, onDrag }: DropzoneProps) {
     const filesRef = useRef(files);
     filesRef.current = files;
 
@@ -87,8 +88,10 @@ export default function Dropzone({ files, onChange }: DropzoneProps) {
                             <div 
                                 draggable 
                                 onDragStart={(e) => {
+                                    onDrag(file);
                                     e.dataTransfer.setData("application/json", JSON.stringify(file));
                                 }}
+                                onDragEnd={() => onDrag(null)}
                                 className="flex flex-col items-center border-2 border-transparent hover:border-brand-dark rounded-xl">
                                 <div onClick={(e) => e.stopPropagation()} key={file.name} className="flex flex-col relative w-32 h-22 rounded-xl overflow-hidden items-center justify-center border-2">
                                     <button 
